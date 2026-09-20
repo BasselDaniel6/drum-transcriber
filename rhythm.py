@@ -34,10 +34,10 @@ def snap_duration(d):
 
 def snap_all(durations): # for debugging
     durations = [snap_duration(d) for d in durations]
-    durations[86] = Fraction(1, 6)
+    """durations[86] = Fraction(1, 6)
     durations[104] = Fraction(1, 4)
-    durations[114] = Fraction(1, 4)
-    return durationsgit config --global user.email "your_real_email@example.com"
+    durations[114] = Fraction(1, 4)"""
+    return durations
 
 
 def group_notes(lengths, spans=(Fraction(1,1), Fraction(2,1)), tol=0.05):

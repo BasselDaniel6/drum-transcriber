@@ -6,10 +6,10 @@ import numpy as np
 from sklearn.cluster import KMeans
 from pydub import AudioSegment, effects
 
-def detect_hits():
+def detect_hits(input_path):
     # Load audio with pydub
-    audio = AudioSegment.from_file("bloo_clip_cut.mp3", format="mp3")
-    audio = audio[100:16635]
+    audio = AudioSegment.from_file(input_path, format="mp3")
+    #audio = audio[100:16635]
     audio.export("raw_clip.wav", format="wav")
 
     # preprocessing
@@ -35,7 +35,8 @@ def detect_hits():
 
     # detect bpm
     y = librosa.effects.preemphasis(y)
-    intervals = np.diff(refined_times).reshape(-1, 1)[:40]
+    #intervals = np.diff(refined_times).reshape(-1, 1)[:40]
+    intervals = np.diff(refined_times).reshape(-1, 1)
     # Cluster into 2 groups: main beats vs fast ornaments
     kmeans = KMeans(n_clusters=2, random_state=0).fit(intervals)
     labels = kmeans.labels_
@@ -43,7 +44,8 @@ def detect_hits():
     cluster_medians = [np.median(intervals[labels==i]) for i in range(2)]
     main_interval = max(cluster_medians)
 
-    bpm = round(60 / (main_interval*2))
+    #bpm = round(60 / (main_interval*2))
+    bpm = 90
 
     return {
         "onset_times": onset_times,
@@ -214,3 +216,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

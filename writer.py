@@ -1,3 +1,4 @@
+import time
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -19,9 +20,8 @@ def make_note(length, is_accent = False):
 
     return n
 
-
-def main():
-    data = detect_hits()
+def transcribe(input_file, output_file):
+    data = detect_hits(input_file)
     onset_times = data["refined_times"]
     bpm = data["bpm"]
     is_accent = data["is_accent"]
@@ -38,8 +38,8 @@ def main():
     score = stream.Score()
     score.metadata = metadata.Metadata()
     score.metadata.title = "Snare Transcription"
-    part = stream.Part()
 
+    part = stream.Part()
     part.id = 'snare'
     part.insert(0, clef.PercussionClef())
     part.insert(0, instrument.UnpitchedPercussion())
@@ -55,10 +55,27 @@ def main():
     part = part.makeNotation()
 
     score.append(part)
-    score.write("musicxml", "snare_output.musicxml")
+    score.write("musicxml", fp=output_file)
 
-    print("Done. Open snare_output.musicxml in MuseScore.")
+    #print("Done. Open snare_output.musicxml in MuseScore.")
+    print(f"Wrote {output_file}")
 
+    return {
+        "bpm": bpm,
+        "notes": len(snapped),
+        "output_file": output_file
+    }
+    
+
+def main():
+    start = time.time()
+    transcribe(
+        input_file="bloo_clip_cut.mp3",
+        output_file="snare_output.musicxml"
+    )
+    end = time.time()
+    latency = end - start
+    print("latency", latency)
 
 if __name__ == "__main__":
     main()
