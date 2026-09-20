@@ -6,7 +6,7 @@ import numpy as np
 from sklearn.cluster import KMeans
 from pydub import AudioSegment, effects
 
-def detect_hits(input_path):
+def detect_hits(input_path, bpm=None):
     # Load audio with pydub
     audio = AudioSegment.from_file(input_path, format="mp3")
     #audio = audio[100:16635]
@@ -33,19 +33,21 @@ def detect_hits(input_path):
     stengths = get_hit_strengths(y_raw, sr2, refined_times)
     is_accent = detect_accents(stengths)
 
-    # detect bpm
-    y = librosa.effects.preemphasis(y)
-    #intervals = np.diff(refined_times).reshape(-1, 1)[:40]
-    intervals = np.diff(refined_times).reshape(-1, 1)
-    # Cluster into 2 groups: main beats vs fast ornaments
-    kmeans = KMeans(n_clusters=2, random_state=0).fit(intervals)
-    labels = kmeans.labels_
-    # Find which cluster has the longest median interval (likely main tempo)
-    cluster_medians = [np.median(intervals[labels==i]) for i in range(2)]
-    main_interval = max(cluster_medians)
+    # Detect BPM only when the user did not supply one.
+    if bpm is None:
+        y = librosa.effects.preemphasis(y)
+        intervals = np.diff(refined_times).reshape(-1, 1)
 
-    #bpm = round(60 / (main_interval*2))
-    bpm = 90
+        if len(intervals) < 2:
+            raise ValueError("Not enough detected hits to estimate BPM automatically.")
+
+        # Cluster into 2 groups: main beats vs fast ornaments
+        kmeans = KMeans(n_clusters=2, random_state=0).fit(intervals)
+        labels = kmeans.labels_
+        # Find which cluster has the longest median interval (likely main tempo)
+        cluster_medians = [np.median(intervals[labels==i]) for i in range(2)]
+        main_interval = max(cluster_medians)
+        bpm = round(60 / (main_interval*2))
 
     return {
         "onset_times": onset_times,

@@ -20,8 +20,8 @@ def make_note(length, is_accent = False):
 
     return n
 
-def transcribe(input_file, output_file):
-    data = detect_hits(input_file)
+def transcribe(input_file, output_file, bpm=None):
+    data = detect_hits(input_file, bpm=bpm)
     onset_times = data["refined_times"]
     bpm = data["bpm"]
     is_accent = data["is_accent"]

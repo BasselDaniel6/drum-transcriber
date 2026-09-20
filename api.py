@@ -1,8 +1,7 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.responses import FileResponse
 import tempfile
 import os
-from detect import detect_hits
 from writer import transcribe
 
 app = FastAPI()
@@ -14,7 +13,15 @@ def home():
 
 
 @app.post("/transcribe")
-async def transcribe_endpoint(file: UploadFile = File(...)):
+async def transcribe_endpoint(
+    file: UploadFile = File(...),
+    bpm: int | None = Form(
+        default=None,
+        ge=20,
+        le=300,
+        description="Optional BPM. Leave blank to detect the BPM automatically."
+    )
+):
     if not file.filename.lower().endswith(".mp3"):
         raise HTTPException(status_code=400, detail="Only MP3 files are supported right now.")
 
@@ -29,7 +36,7 @@ async def transcribe_endpoint(file: UploadFile = File(...)):
 
         output_path = input_path.replace(suffix, ".musicxml")
 
-        transcribe(input_path, output_path)
+        transcribe(input_path, output_path, bpm=bpm)
 
         return FileResponse(
             path=output_path,
